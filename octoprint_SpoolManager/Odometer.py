@@ -37,6 +37,7 @@ class FilamentOdometer(object):
             return
 
         if gcode == "G1" or gcode == "G0":  # move
+            ## LJP This could be ignored, or simply a call to update the weight
             e = self._get_float(cmd, self.regexE)
             if e is not None:
                 if self.relativeMode or self.relativeExtrusion:
@@ -49,22 +50,28 @@ class FilamentOdometer(object):
                 self.maxExtrusion[self.currentTool] = max(self.maxExtrusion[self.currentTool],
                                                           self.totalExtrusion[self.currentTool])
         elif gcode == "G90":  # set to absolute positioning
+            ## LJP  This could be ignored.
             self.relativeMode = False
             if self.g90_extruder:
                 self.relativeExtrusion = False
         elif gcode == "G91":  # set to relative positioning
+            ## LJP  This could be ignored.
             self.relativeMode = True
             if self.g90_extruder:
                 self.relativeExtrusion = True
         elif gcode == "G92":  # set position
+            ## LJP  This could be ignored.
             e = self._get_float(cmd, self.regexE)
             if e is not None:
                 self.lastExtrusion[self.currentTool] = e
         elif gcode == "M82":  # set extruder to absolute mode
+            ## LJP  This could be ignored.
             self.relativeExtrusion = False
         elif gcode == "M83":  # set extruder to relative mode
+            ## LJP  This could be ignored.
             self.relativeExtrusion = True
         elif gcode.startswith("T"):  # select tool
+            ## FOR ME, personally, don't care.  If someone has MANY load cells, then we care.
             t = self._get_int(cmd, self.regexT)
             if t is not None:
                 self.currentTool = t
@@ -78,6 +85,7 @@ class FilamentOdometer(object):
         self.g90_extruder = flag
 
     def get_extrusion(self):
+        ## LJP return current weight
         return self.maxExtrusion
 
     def get_current_tool(self):

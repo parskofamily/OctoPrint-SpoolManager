@@ -11,6 +11,7 @@ from octoprint.util.comm import MachineCom
 
 from octoprint_SpoolManager.DatabaseManager import DatabaseManager
 from octoprint_SpoolManager.Odometer import FilamentOdometer
+from octoptint_SpoolManager.hx711 import HX711
 from octoprint_SpoolManager.api import Transformer
 from octoprint_SpoolManager.api.SpoolManagerAPI import SpoolManagerAPI
 from octoprint_SpoolManager.common import StringUtils
@@ -43,6 +44,14 @@ class SpoolmanagerPlugin(
 		self._filamentOdometer = None
 		self._filamentOdometer = FilamentOdometer()
 		# TODO no idea what this thing is doing in detail self._filamentOdometer.set_g90_extruder(self._settings.getBoolean(["feature", "g90InfluencesExtruder"]))
+
+		# HX711 load cell
+		self._hx1 = None
+		self._hx1 = HX711(38, 40)  # (SPI1 MOSI,SPI1 SCLK) UPDATED was (20,21)
+		self._hx1.set_reading_format("LSB", "MSB") 
+		self._hx1.reset()
+		self._hx1.power_up()
+
 
 		self._filamentManagerPluginImplementation = None
 		self._filamentManagerPluginImplementationState = None
@@ -263,6 +272,7 @@ class SpoolmanagerPlugin(
 	def _on_printJobStarted(self):
 		# starting new print
 		self._filamentOdometer.reset()
+		## LJP  This could be where I grab the current weight, aka reset
 
 		spoolModel = self.loadSelectedSpool()
 		if (spoolModel != None):
@@ -288,6 +298,7 @@ class SpoolmanagerPlugin(
 		spoolModel.lastUse = lastUsage
 		# - Used length
 		currentExtrusionForAllTools = self._filamentOdometer.get_extrusion()
+		## LJP  This could just grab the latest load cell value, the job is done, so the weight should be stable.
 		if (len(currentExtrusionForAllTools) == 0):
 			self._logger.warning("Odomenter could not detect any extrusion")
 			return
